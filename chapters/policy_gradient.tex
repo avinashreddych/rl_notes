@@ -1,0 +1,15 @@
+\documentclass[../main.tex]{subfiles}
+
+\begin{document}
+
+    
+    \textbf{Policy Gradient Theorem}\\
+    you have a stochastic policy $\pi(a |s)$.
+    
+    $$ \bigtriangledown v_\pi(s) = \bigtriangledown \left[ \sum_a \pi(a|s)Q_\pi(s,a) \right] $$
+    
+    $$ \bigtriangledown J(\theta)  \propto  \sum_s\mu(s) \sum_s Q_\pi(s,a) \bigtriangledown  (\pi_\theta(a|s) $$
+    
+    $$ \bigtriangledown J(\theta)  =  \mathbb{E}_\pi \left[ G_t \bigtriangledown ln \pi(a|s) \right]$$
+    
+\end{document}

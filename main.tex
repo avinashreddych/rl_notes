@@ -5,6 +5,7 @@
 \usepackage{amsmath,amssymb}
 \usepackage{algpseudocode}
 \usepackage{graphicx}
+\usepackage{subfiles}
 \title{ReinforcementLearning Notes}
 \author{Avinash Reddy}
 \date{January 2023}
@@ -14,182 +15,19 @@
 \maketitle
 
 \section{Introduction}
-
-Reinforcement Learning is also known as 
-\begin{itemize}
-    \item optimal control
-    \item Approximate Dynamic programming
-    \item Neuro-Dynamic Programming
-\end{itemize}
-Reinforcement Learning is an area of machine learning inspired by the behavioural psychology
-concerned with how software agents ought to take actions in an environment so as to maximise 
-some notion of cumulative reward.
-\vspace{1pt}
-\\
-Animal psychology
-\begin{itemize}
-    \item negative rewards - pain and hunger
-    \item positive reinforcements - pleasure and food
-    \item reinforcements used to train animals
-\end{itemize}
-Applying the similar philosophy to software agents
-\section{Definition}
-\begin{center}
-    \includegraphics*[scale = 0.3]{images/rl.png}   
-\end{center}
-\newpage
-Reinforcement Leaning Application Areas : 
-\begin{itemize}
-    \item Game Playing
-    \item Operations Research
-    \item Elevator Scheduling
-    \item controls 
-    \item spoken dialouge systems
-    \item data center energy consumption
-    \item self managing networks
-    \item autonomous vehicles
-    \item computational finance
-\end{itemize}
-
+\subfile{chapters/introduction.tex}
 
 \section{Markov Decision Process}
-\textbf{Definition}
-\begin{itemize}
-    \item State $s \in S$
-    \item Action $a \in A$
-    \item reward $r \in \mathbb{R} $
-    \item Transition model $Pr(s_{t+1} | s_t, a_t)$
-    \item Reward model $Pr(r |  s_{t+1}, s_t, a_t)$
-    \item Discount Factor $\gamma \in [0,1]$
-    \item Horizon $T$
-\end{itemize}
-Goal is to find a policy $\pi(a|s)$ that maximises the expectation of discounted return.
-\newline
-\textbf{How RL differs from MDP solutions}
-\begin{itemize}
-    \item No Transition Model
-    \item No Reward Model
-\end{itemize}
-$$ J(\pi) = \mathbb{E}_\pi \left[ \sum\limits_{t=0}^T \gamma^t r_t \right]$$
+\subfile{chapters/mdp.tex}
 
-However, we still solve the MDP problem using RL by interacting with the environment by learning the transition and reward models or directly learning the policy.
+\section{Dynamic Programming}
+\subfile{chapters/dynamic_pr.tex}
 
-\textbf{Types of RL algorithms}
-\begin{itemize}
-    \item Model Based- if we try to learn the transition and reward models
-    \item Model Free - here, we don't learn any model dynamics. No transition and reward models. Below are the types of model free RL algorithms
-    \item Value Based- if we try to learn the value function $V(s)$ of the state or value function of state-action pair $Q(s,a)$.
-    \item Policy Based- if we try to learn the policy $\pi(a|s) -  \pi(s,a)$ directly.
-    \item Policy Gradient- if we try to learn the policy $\pi(a|s) - \pi(s,a)$ directly using gradient ascent.
-    \item Actor Critic - contains both policy $\pi(a|s) - \pi(s,a)$ and value function $V(s) -  Q(s,a)$.
-\end{itemize}
-
-
-\section{Model Free Evaluation}
-\textbf{Monte Carlo Evaluation}
-\begin{flalign}
-    V^\pi(s) &= \mathbb{E}_\pi \left[ \sum\limits_{t=0}^T \gamma^t r_t \right] \nonumber \\
-             &\approx \frac{1}{n(s)} \sum_{n(s)}^{k = 1} \left[ \sum\limits_{t=0}^T \gamma^t r_t \right]
-             \nonumber \tag*{(sample approximation )}
-             \\ 
-             &= \frac{1}{n(s)} \sum_{n(s)}^{k = 1}  G_k \nonumber  \tag*{ discounted sum of reward is defined as $G_k$}
-\end{flalign}
-\textbf{Temporal Difference Learning}
-\begin{flalign}
-    V^\pi(s) &= \mathbb{E}_\pi[r|s] + \gamma \sum_{s_{t+1}} Pr[s_{t+1} | s_t] V^\pi(s_{t+1})     \nonumber \\
-    &\approx r + \gamma V^\pi(s_{t+1}) \nonumber \tag*{(one sample approximation)}  
-\end{flalign}
-\section{Monte Carlo Evaluation}
-\textbf{Monte Carlo Evaluation}
-$$ G_k = \sum_{t} \gamma^tr_t^{(k)} $$
-$G_k$ is a discounted sum of rewards in one episode or trajectory.\\
-\textbf{Approximate value function}
-\begin{flalign}
-    V^\pi_n(s) &\approx \frac{1}{n(s)} \sum_{k= 1}^{n(s)}  G_k \nonumber \\
-    &= \frac{1}{n(s)} \left[ G_{n(s)}  + \sum_{k=1}^{n(s) -1} G_k\right] \nonumber \\
-    &= \frac{1}{n(s)} \left[ G_{n(s)}  + (n(s) - 1) \frac{1}{n(s) - 1} \sum_{k=1}^{n(s) -1} G_k\right] \nonumber \\
-    &= \frac{1}{n(s)} \left[ G_{n(s)}  + (n(s) - 1) V^\pi_{n - 1}(s)\right] \nonumber \\
-    &= V^\pi_{n - 1}(s) + \frac{1}{n(s)} \left[ G_{n(s)}  - V^\pi_{n - 1}(s)\right] \nonumber \\
-    &= V^\pi_{n - 1}(s) + \alpha \left[ G_{n(s)}  - V^\pi_{n - 1}(s)\right]  \nonumber \tag*{where $\alpha = \frac{1}{n(s)}$} 
-\end{flalign}
-Incremental update step
-$$ V^\pi_n(s) \leftarrow V^\pi_{n-1}(s) + \alpha_n \left[ G_{n(s)}  - V^\pi_{n - 1}(s)\right]  $$
-iterate over each sample trajectory and do the incremental update of the value function.
-\section*{Temporal Difference Learning}
-\textbf{Temporal Difference Learning}
-approximate value function
-$$ V^\pi(s) \approx r + \gamma V^\pi(s_{t+1}) $$
-Incremental update step
-$$ V^\pi_n(s) \leftarrow V^\pi_{n-1}(s) + \alpha_n \left[ r + V^\pi_{n-1}(s_{t+1}) - V^\pi_{n-1}(s) \right]  $$
 \section{DQN Learning}
-\begin{algorithm}
-\caption{DQN Learning- Gradient Learning}\label{alg:dqn}
-\begin{algorithmic}
-\State Initialise a Q network  with parameters $\theta$
-\State start with state $s_t$
-\While{True}
-\State take action $a_t$ 
-\State observe next state $s_{t+1}$ and $R_{t+1}$
-\State calculate the gradient $$ \theta \leftarrow \theta + \alpha \bigtriangledown_\theta \left[ R_{t+1} + \gamma \textit{max}_{a} Q_\theta(s_{t+1}, a ) - Q_\theta(s_t, a_t) \right]$$
-\State $s_t \leftarrow s_{t+1}$
-\EndWhile
-\end{algorithmic}
-\end{algorithm}
+\subfile{chapters/dqn_algo.tex}
 
-
-\begin{algorithm}
-\caption{DQN Learning- Experience Replay Learning}\label{alg:dqn_ex_replay}
-\begin{algorithmic}
-\State Initialise a Q network  with parameters $\theta$
-\State start with state $s_t$
-\State Initialise a replay buffer $D$
-\While{True}
-\State take action $a_t$ 
-\State observe next state $s_{t+1}$ and $R_{t+1}$
-\State save the transition $(s_t, a_t, R_{t+1}, s_{t+1})$ in $D$
-\While{some epochs}
-\State sample a mini-batch $N$ from the replay buffer $D$
-\State calculate the gradient $$ \theta \leftarrow \theta + \alpha \bigtriangledown_\theta \frac{1}{N}\sum\limits_{i=1}^N \left[ R_{t+1}^i + \gamma \textit{max}_{a^i} Q_\theta(s_{t+1}^i, a^i ) - Q_\theta(s_t^i, a_t^i) \right]$$
-\EndWhile
-\State $s_t \leftarrow s_{t+1}$
-\EndWhile
-\end{algorithmic}
-\end{algorithm}
-
-
-
-\begin{algorithm}
-\caption{DQN Learning- Experience Replay Learning with Target network}\label{alg:dqn_ex_replay_with_target}
-\begin{algorithmic}
-\State Initialise a Q network  with parameters $\theta$ and Target $Q$ network with parameters $\theta'$
-\State $\theta' \leftarrow \theta$
-\State start with state $s_t$
-\State Initialise a replay buffer $D$
-\While{True}
-\State take action $a_t$ 
-\State observe next state $s_{t+1}$ and $R_{t+1}$
-\State save the transition $(s_t, a_t, R_{t+1}, s_{t+1})$ in $D$
-\While{some epochs}
-\State sample a mini-batch $N$ from the replay buffer $D$
-\State calculate the gradient $$ \theta \leftarrow \theta + \alpha \bigtriangledown_\theta \frac{1}{N}\sum\limits_{i=1}^N \left[ R_{t+1}^i + \gamma \textit{max}_{a^i} Q_{\theta'}(s_{t+1}^i, a^i ) - Q_\theta(s_t^i, a_t^i) \right]$$
-\EndWhile
-\State $\theta' \leftarrow \theta$
-\State $s_t \leftarrow s_{t+1}$
-\EndWhile
-\end{algorithmic}
-\end{algorithm}
-
-\newpage
 \section{Policy Gradient Algorithms}
-
-\textbf{Policy Gradient Theorem}\\
-you have a stochastic policy $\pi(a |s)$.
-
-$$ \bigtriangledown v_\pi(s) = \bigtriangledown \left[ \sum_a \pi(a|s)Q_\pi(s,a) \right] $$
-
-$$ \bigtriangledown J(\theta)  \propto  \sum_s\mu(s) \sum_s Q_\pi(s,a) \bigtriangledown  (\pi_\theta(a|s) $$
-
-$$ \bigtriangledown J(\theta)  =  \mathbb{E}_\pi \left[ G_t \bigtriangledown ln \pi(a|s) \right]$$
+\subfile{chapters/policy_gradient.tex}
 
 
 
