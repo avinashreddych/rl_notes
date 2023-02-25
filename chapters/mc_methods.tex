@@ -1,0 +1,286 @@
+\documentclass[../main.tex]{subfiles}
+
+\begin{document}
+Dynamic Programming methods are suitable for MDPs for which the model dynamics are known. In this chapter, we will discuss the methods that can be used to solve MDPs for which the model dynamics are not known. These methods are called Monte Carlo methods. The main idea behind Monte Carlo methods is to estimate the value function by averaging the returns obtained from the episodes. The main advantage of Monte Carlo methods is that they do not require the model dynamics to be known. The main disadvantage of Monte Carlo methods is that they are computationally expensive. 
+
+\section{Monte Carlo Prediction}
+In earlier chapters, we defined value function as expected sum of discounted rewards. To estimate the expected sum, one way is to average the discounted rewards obtained from the episodes.This is the idea behind the monte carlo methods. Even the core idea of averaging remains same, there are simple variations in the way we consider the rewards for averaging.
+\\
+Let us discuss two simple algorithms.
+\begin{itemize}
+    \item First-visit MC
+    \item Every visit MC
+\end{itemize}
+
+\begin{algorithm}[H]
+\caption{First-visit MC}
+\label{alg:first-visit}
+\begin{algorithmic}[1]
+\State Initialize $V(s)$ arbitrarily for each $s \in S$ , and policy $\pi$ to be evaluated
+\State Initialize $Returns(s), N(S_t)$ as empty list, for each $s \in S$
+\While{ each episode}:
+\State Generate an episode following $\pi$: $S_0, A_0, R_1, S_1, A_1, R_2,  \cdots S_{T-1}, A_{T-1}, R_{T}$
+\State $G \gets 0$
+\While{ Loop for each step of episode $t = T-1, \cdots , 2,1,0}$:
+\State $G \gets \gamma G + R_{t+1}$
+\State Unless $S_t$ is already in $S_0, S_1, \cdots, S_{t-1}$:
+\State \hskip1em Append $G$ to $Returns(S_t)$
+\State \hskip1em $N(S_t) \gets N(S_t) + 1  $
+\State \hskip1em $V_{n+1}(S_t) \gets V_n(S_t) + \frac{1}{N(S_t)} \left[ G - V_n(S_t) \right] $
+\EndWhile
+\EndWhile
+\end{algorithmic}
+\end{algorithm}
+
+First visit MC  averages  the rewards following from the first visit of the state. 
+
+
+\begin{algorithm}[H]
+\caption{Every-visit MC}
+\label{alg:every-visit}
+\begin{algorithmic}[1]
+\State Initialize $V(s)$ arbitrarily for each $s \in S$ , and policy $\pi$ to be evaluated
+\State Initialize $Returns(s), N(S_t)$ as empty list, for each $s \in S$
+\While{ each episode}:
+\State Generate an episode following $\pi$: $S_0, A_0, R_1, S_1, A_1, R_2,  \cdots S_{T-1}, A_{T-1}, R_{T}$ 
+\State $G \gets 0$
+\While{ Loop for each step of episode $t = T-1, \cdots , 2,1,0}$:
+\State $G \gets \gamma G + R_{t+1}$
+\State Append $G$ to $Returns(S_t)$
+\State $N(S_t) \gets N(S_t) + 1  $
+\State $V_{n+1}(S_t) \gets V_n(S_t) + \frac{1}{N(S_t)} \left[ G - V_n(S_t) \right] $
+\EndWhile
+\EndWhile
+\end{algorithmic}
+\end{algorithm}
+
+Every visit MC  averages the  rewards following every visit of the state. 
+
+One can modify the algorithm to find the state action value function. The algorithm is same as above except that we have to maintain the state action value function instead of state value function.
+
+Monte Carlo methods doesn't bootstrap and the estimated value function is state independent. It means that monte carlo method doesn't use the estimate of other states to estimate the value of a state. It is also called on-policy method because it uses the same policy to generate the episodes and to evaluate the policy.
+\section{Monte Carlo Control}
+We now have the algorithm to evaluate any given policy $\pi$ in unknown dynamics MDP. We can use those algorithm to evaluate the policy $\pi$ and then improve the policy. This is the idea behind Monte Carlo control.Using the same strategy used in policy improvement  algorithm, we find the values function for a given policy and then act greedy with respect to the value function which improves the earlier policy. We repeat this process until we find the optimal policy.
+
+There are inherent assumptions in the above algorithms. One assumption is exploring starts, all the state-action pairs are explored enough to average the rewards. Another assumption is we have to sample infinite episodes to converge. The secon assumption we can relax by following the general policy improvement algorithm.
+
+We will see modified version of first visit MC algorithm to find the optimal policy. The algorithm is same as first visit MC algorithm except that we use the greedy policy with respect to the value function to generate the episodes.
+
+
+\begin{algorithm}[H]
+\caption{First Visit MC with policy improvement}
+\label{alg:fv-mc-pi}
+\begin{algorithmic}[1]
+\State Initialize $Q(s,a)$ arbitrarily for each $s \in S, a \in A$ , and policy $\pi$ to be evaluated
+\State Initialize $Returns(s,a), N(s,a)$ as empty list, for each $s \in S, a \in A$
+\While{ each episode}:
+\State Generate an episode following $\pi$: $S_0, A_0, R_1, S_1, A_1, R_2,  \cdots S_{T-1}, A_{T-1}, R_{T}$
+\State $G \gets 0$
+\While{ Loop for each step of episode $t = T-1, \cdots , 2,1,0}$:
+\State $G \gets \gamma G + R_{t+1}$
+\State Unless $S_t$ is already in $S_0, S_1, \cdots, S_{t-1}$:
+\State \hskip1em Append $G$ to $Returns(S_t)$
+\State \hskip1em $N(S_t) \gets N(S_t) + 1  $
+\State \hskip1em $Q_{n+1}(S_t, A_t) \gets Q_n(S_t, A_t) + \frac{1}{N(S_t)} \left[ G - Q_n(S_t,A_t) \right] $
+\State \hskip1em $\pi(S_t) \gets argmax_a Q_{n+1}(S_t,A_t)$
+\EndWhile
+\EndWhile
+\end{algorithmic}
+\end{algorithm}
+
+Now, we will apply the same policy improvement idea on every visit MC algorithm.
+
+\begin{algorithm}[H]
+\caption{Every Visit MC with policy improvement}
+\label{alg:ev-mc-pi}
+\begin{algorithmic}[1]
+\State Initialize $Q(s,a)$ arbitrarily for each $s \in S, a \in A$ , and policy $\pi$ to be evaluated
+\State Initialize $Returns(s,a), N(s,a)$ as empty list, for each $s \in S, a \in A$
+\While{ each episode}:
+\State Generate an episode following $\pi$: $S_0, A_0, R_1, S_1, A_1, R_2,  \cdots S_{T-1}, A_{T-1}, R_{T}$
+\State $G \gets 0$
+\While{ Loop for each step of episode $t = T-1, \cdots , 2,1,0}$:
+\State $G \gets \gamma G + R_{t+1}$
+\State Append $G$ to $Returns(S_t,A_t)$
+\State $N(S_t,A_t) \gets N(S_t,A_t) + 1  $
+\State $Q_{n+1}(S_t, A_t) \gets Q_n(S_t, A_t) + \frac{1}{N(S_t)} \left[ G - Q_n(S_t,A_t) \right] $
+\State $\pi(S_t) \gets argmax_a Q_{n+1}(S_t,A_t)$
+\EndWhile
+\EndWhile
+\end{algorithmic}
+\end{algorithm}
+
+
+From sutton and barto, the convergence to an optimal policy is inevitable. However, there is no formal proof to show the convergence.
+
+To relax the first assumption, we should make sure that policy is epsilon soft. $\pi(\cdot | S_t) > 0$. This is acheived by using $\epsilon$-greedy policy.In contrast to the greedy approach,  we do not choose action greedily rather we choose action with probability $\epsilon$ randomly and with probability $1-\epsilon$ greedily. This is called $\epsilon$-greedy policy. We will see the algorithm to find the optimal policy using $\epsilon$-greedy policy.
+
+\begin{algorithm}[H]
+\caption{Every Visit MC with $\epsilon$-greedy policy improvement}
+\label{alg:ev-mc-egpi}
+\begin{algorithmic}[1]
+\State Initialize $Q(s,a)$ arbitrarily for each $s \in S, a \in A$ , and policy $\pi$ to be evaluated
+\State Initialize $Returns(s,a), N(s,a)$ as empty list, for each $s \in S, a \in A$
+\While{ each episode}:
+\State Generate an episode following $\pi$: $S_0, A_0, R_1, S_1, A_1, R_2,  \cdots S_{T-1}, A_{T-1}, R_{T}$
+\State $G \gets 0$
+\While{ Loop for each step of episode $t = T-1, \cdots , 2,1,0}$:
+\State $G \gets \gamma G + R_{t+1}$
+\State Append $G$ to $Returns(S_t,A_t)$
+\State $N(S_t,A_t) \gets N(S_t,A_t) + 1  $
+\State $Q_{n+1}(S_t, A_t) \gets Q_n(S_t, A_t) + \frac{1}{N(S_t)} \left[ G - Q_n(S_t,A_t) \right] $
+\State $\pi(a|S_t) \gets \begin{cases} 1-\epsilon+\frac{\epsilon}{|A|} & \text{if } a = argmax_a Q_{n+1}(S_t,A_t) \\ \frac{\epsilon}{|A|} & \text{otherwise} \end{cases}$
+\EndWhile
+\EndWhile
+\end{algorithmic}
+\end{algorithm}
+
+From sutton and barto, the above epsilon-greedy policy improvement algorithm also converges to an optimal policy. Till now, we have seen the on-policy algorithms to find the optimal policy. On-policy algorithms suffer from disadvantage that it can't reuse the generated episodes. To overcome this disadvantage. On-policy approach means we use a policy to generate episodes and use the same policy to improve the policy. Off-policy approach means we use a policy called \emph{behaviour policy} to generate episodes and use another policy called \emph{target policy} to improve continously.
+
+we first solve the prediction problem of value function using off-policy approach. We will use the same algorithm as we used for on-policy approach. The only difference is that we will use the behaviour policy to generate episodes and use the target policy to improve the policy. we make an assumption that $ b(a|s) >0$ to facilitate the exploring starts behaviour. On the otherhand, target policy can be deterministic. While the behaviour policy must be stochastic to facilitate the exploration.
+
+\emph{Importance Sampling} is the trick followed by all off-policy algorithms. With the help of importance sampling, we can reuse the generated episodes. Instead of accumulting the discounted sum of rewards, we will accumulate the weighted discounted sum of rewards. The weight is the ratio of the probability of the action taken by the behaviour policy to the probability of the action taken by the target policy. 
+
+Given a starting state $S_0$ under a stochastic policy $\pi$, the resulting trajectory will have a probability distribution
+
+\begin{equation}
+\begin{aligned}
+P_{\pi}(S_0, A_0, R_1, S_1, A_1, R_2, \cdots, S_{T-1}, A_{T-1}, R_{T}) = \prod_{t=0}^{T-1} \pi(A_t|S_t) \cdot P(S_{t+1}|S_t, A_t) \cdot R_{t+1} \nonumber
+\end{aligned}
+\end{equation}
+
+We define the relative probability of the trajectory under the target policy $\pi$ and the behaviour policy $b$ as
+
+\begin{equation}
+\begin{aligned}
+\rho_{t:T-1} &=\frac{\prod_{k=t}^{T-1}\pi(A_k|S_k)Pr(S_{k+1}|S_k, A_k)}{\prod_{k=t}^{T-1}b(A_k|S_k)Pr(S_{k+1}|S_k, A_k)} \nonumber \\
+&= \prod_{k=t}^{T-1}\frac{\pi(A_k|S_k)}{b(A_k|S_k)} \nonumber
+\end{aligned}
+\end{equation}
+
+This is called importance sampling ratio.If you sample with behaviour policy $b$ and then estimate $V(s)$ as $\mathbb{E}[G_t|S_t]$ which will result in $V_b(s)$. Nevertheless, we need to estimate $V_\pi(s)$ which is the value function under the target policy. We can use the importance sampling ratio to estimate $V_\pi(s)$ as expected weighted  sum of rewards, where the weight is given by the importance sampling ratio.
+Instead of $\mathbb{E}[G_t|S_t]$, you approximate $\mathbb{E}[\rho_{t:T-1} G_t | S_t] = V_\pi(s)$. $\rho$ is the importance sampling ratio.
+
+Off-policy Every Visit MC Prediction Algorithm needs to track where the state-action pair occurs in the episode. Let it be $T(s,a)$. We store the time steps at which the state-action pair occurs in the episode. This favours us to calculate the importance sampling ratio from those time steps. We will use the importance sampling ratio to calculate the weighted sum of rewards. This will give us the value function under the target policy.
+
+\begin{equation}
+    \begin{aligned}
+    Q_\pi(s,a) &= \frac{\sum_{t \in T(s,a) } \rho_{t:T(t)-1}G_t}{|T(s,a)|} \nonumber\\
+    \end{aligned}
+\end{equation}
+
+This is called ordinary importance sampling.
+
+\begin{equation}
+    \begin{aligned}
+    Q_\pi(s,a) &= \frac{\sum_{t \in T(s,a) } \rho_{t:T(t)-1}G_t}{\sum_{t \in T(s,a) } \rho_{t:T(t)-1}} \nonumber\\
+    \end{aligned}
+\end{equation}
+
+This is an alternative way of calculating the value function under the target policy. This is called weighted importance sampling.
+Now the question is which algorithm to follow or which algorithm leads to convergence and at what rate. 
+
+Let's see in case of first visit algorithms. The differences are generally expressed in terms of biases and variances. Ordinary importance sampling is unbiased  wheras weighted importance sampling is biased(although the bias converges to zero finally). Ordinary importance sampling has unbounded variance. On the other hand, weighted importance sampling had lower variance and is the preferred algorithm. Nevertheless, we will use the ordinary importance sampling while using approximate value function methods.
+
+In every visit monte carlo case, both ordinary importance sampling and weighted importance sampling are biased but eventually converge to zero.
+
+We will look at the implementation of off-policy every visit monte carlo prediction algorithm.
+
+we are estimating 
+
+\begin{equation}
+    \begin{aligned}
+    Q_\pi(s,a) &= \frac{\sum_{t \in T(s,a) } \rho_{t:T(t)-1}G_t}{\sum_{t \in T(s,a) } \rho_{t:T(t)-1}} \nonumber\\
+    \end{aligned}
+\end{equation}
+
+we approximate it with the weight parameter $W_k$.
+
+\begin{equation}
+    \begin{aligned}
+    Q_\pi(s,a) &= \frac{\sum_{t \in T(s,a) } W_kG_t}{\sum_{t \in T(s,a) } W_k} \nonumber\\
+    \end{aligned}
+\end{equation}
+
+An incremental update rule for $Q_\pi(s,a)$ is
+
+\begin{equation}
+    \begin{aligned}
+    Q_{n+1}(s,a) &= Q_n(s,a) + \frac{W_n}{C_n} \left[G_n - V_n\right]  \nonumber\\
+    \end{aligned}
+\end{equation}
+where $C_{n+1} = C_n + W_{n+1}$
+
+\textbf{Off policy Every Visit Monte Carlo Prediction Algorithm}
+
+\begin{algorithm}[H]
+\caption{Off policy Every Visit Monte Carlo Prediction Algorithm}
+\label{alg:off-policy-every-visit-monte-carlo-prediction}
+\begin{algorithmic}[1]
+\State Input an arbitrary policy $\pi$ and a behaviour policy $b$
+\State Initialize $Q(s,a)$ arbitrarily for all $s \in S$ and $a \in A(s)$
+\State Initialize $C(s,a)$ with zeros for all $s \in S$ and $a \in A(s)$
+\While{ each episode}
+\State Generate an episode $S_0, A_0, R_1, S_1, A_1, R_2, \cdots, S_{T-1}, A_{T-1}, R_{T}$ under behaviour policy $b$
+\State $G \leftarrow 0$
+\State $W \leftarrow 1$
+\For{$t=T-1$ to $0$}
+\State $G \leftarrow \gamma G + R_{t+1}$
+\State $C(S_t, A_t) \leftarrow C(S_t, A_t) + W$
+\State $Q(S_t, A_t) \leftarrow Q(S_t, A_t) + \frac{W}{C(S_t, A_t)} \left[G - Q(S_t, A_t)\right]$
+\State $W \leftarrow W \frac{\pi(A_t|S_t)}{b(A_t|S_t)}$
+\EndFor
+\EndWhile
+
+\end{algorithmic}
+\end{algorithm}
+
+we now the algorithm to evaluate a state value function under a target policy $\pi$ and any other behaviour policy $b$. To improve the policy $\pi$, we follow the general policy improvement approach by acting greedy.
+
+\begin{equation}
+    \begin{aligned}
+    \pi'(s) &= \arg\max_{a \in A(s)} Q_\pi(s,a) \nonumber\\
+    \end{aligned}
+\end{equation}
+
+such that $\pi'(s) \geq \pi(s)$ for all $s \in S$.
+
+\textbf(Off policy Every Visit Monte Carlo Control Algorithm)
+
+\begin{algorithm}[H]
+\caption{Off policy Every Visit Monte Carlo Control Algorithm}
+\label{alg:off-policy-every-visit-monte-carlo-control}
+\begin{algorithmic}[1]
+
+\State Initialize $Q(s,a)$ arbitrarily for all $s \in S$ and $a \in A(s)$
+\State Initialize $C(s,a)$ with zeros for all $s \in S$ and $a \in A(s)$
+\State Input an arbitrary soft behaviour  policy $b$ \Comment{e.g. $\epsilon$-soft}
+\State $\pi \gets argmax_a Q(s,a)$
+\While{ each episode}
+\State Generate an episode $S_0, A_0, R_1, S_1, A_1, R_2, \cdots, S_{T-1}, A_{T-1}, R_{T}$ under behaviour policy $b$
+\State $G \leftarrow 0$
+\State $W \leftarrow 1$
+\For{$t=T-1$ to $0$}
+\State $G \leftarrow \gamma G + R_{t+1}$
+\State $C(S_t, A_t) \leftarrow C(S_t, A_t) + W$
+\State $Q(S_t, A_t) \leftarrow Q(S_t, A_t) + \frac{W}{C(S_t, A_t)} \left[G - Q(S_t, A_t)\right]$
+\State $\pi'(s) \leftarrow \arg\max_{a \in A(s)} Q_\pi(s,a)$
+\State $\pi \leftarrow \pi'$
+\If{$A_t \neq \pi(S_t)$}
+\State Break
+\EndIf
+\EndFor
+\State $W \gets W \frac{1}{b(A_t|S_t)}$
+
+
+
+\EndWhile
+\end{algorithmic}
+\end{algorithm}
+
+
+
+
+
+\end{document}
+

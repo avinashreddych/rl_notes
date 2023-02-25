@@ -1,11 +1,13 @@
-\documentclass{article}
+\documentclass{book}
 \usepackage[utf8]{inputenc}
 \usepackage{graphics}
-\usepackage{algorithm}
+\usepackage{ algorithm,algorithmicx, algpseudocode}
 \usepackage{amsmath,amssymb}
 \usepackage{algpseudocode}
 \usepackage{graphicx}
 \usepackage{subfiles}
+\usepackage{blindtext}
+\usepackage[a4paper, total={6in, 8in}]{geometry}
 \title{ReinforcementLearning Notes}
 \author{Avinash Reddy}
 \date{January 2023}
@@ -14,20 +16,32 @@
 
 \maketitle
 
-\section{Introduction}
+\chapter{Introduction}
+\section*{Introduction}
 \subfile{chapters/introduction.tex}
 
-\section{Markov Decision Process}
+
+\chapter{Multi-Armed Bandits}
+We are not interested in this chapter. Or else we will visit at end of our journey. Just introduced to match the chapters number with Sutton and Barto book chapters.
+
+\chapter{Markov Decision Process}
 \subfile{chapters/mdp.tex}
 
-\section{Dynamic Programming}
+\chapter{Dynamic Programming}
 \subfile{chapters/dynamic_pr.tex}
 
-\section{DQN Learning}
-\subfile{chapters/dqn_algo.tex}
+\chapter{Monte Carlo Methods}
+\subfile{chapters/mc_methods.tex}
 
-\section{Policy Gradient Algorithms}
-\subfile{chapters/policy_gradient.tex}
+\chapter{Temporal Difference Learning}
+\subfile{chapters/td_learning.tex}
+
+% \section{DQN Learning}
+% \subfile{chapters/dqn_algo.tex}
+
+% \section{Policy Gradient Algorithms}
+% \subfile{chapters/policy_gradient.tex}
+
 
 
 

@@ -35,41 +35,4 @@ However, we still solve the MDP problem using RL by interacting with the environ
 \end{itemize}
 
 
-\section{Model Free Evaluation}
-\textbf{Monte Carlo Evaluation}
-\begin{flalign}
-    V^\pi(s) &= \mathbb{E}_\pi \left[ \sum\limits_{t=0}^T \gamma^t r_t \right] \nonumber \\
-             &\approx \frac{1}{n(s)} \sum_{n(s)}^{k = 1} \left[ \sum\limits_{t=0}^T \gamma^t r_t \right]
-             \nonumber \tag*{(sample approximation )}
-             \\ 
-             &= \frac{1}{n(s)} \sum_{n(s)}^{k = 1}  G_k \nonumber  \tag*{ discounted sum of reward is defined as $G_k$}
-\end{flalign}
-\textbf{Temporal Difference Learning}
-\begin{flalign}
-    V^\pi(s) &= \mathbb{E}_\pi[r|s] + \gamma \sum_{s_{t+1}} Pr[s_{t+1} | s_t] V^\pi(s_{t+1})     \nonumber \\
-    &\approx r + \gamma V^\pi(s_{t+1}) \nonumber \tag*{(one sample approximation)}  
-\end{flalign}
-\section{Monte Carlo Evaluation}
-\textbf{Monte Carlo Evaluation}
-$$ G_k = \sum_{t} \gamma^tr_t^{(k)} $$
-$G_k$ is a discounted sum of rewards in one episode or trajectory.\\
-\textbf{Approximate value function}
-\begin{flalign}
-    V^\pi_n(s) &\approx \frac{1}{n(s)} \sum_{k= 1}^{n(s)}  G_k \nonumber \\
-    &= \frac{1}{n(s)} \left[ G_{n(s)}  + \sum_{k=1}^{n(s) -1} G_k\right] \nonumber \\
-    &= \frac{1}{n(s)} \left[ G_{n(s)}  + (n(s) - 1) \frac{1}{n(s) - 1} \sum_{k=1}^{n(s) -1} G_k\right] \nonumber \\
-    &= \frac{1}{n(s)} \left[ G_{n(s)}  + (n(s) - 1) V^\pi_{n - 1}(s)\right] \nonumber \\
-    &= V^\pi_{n - 1}(s) + \frac{1}{n(s)} \left[ G_{n(s)}  - V^\pi_{n - 1}(s)\right] \nonumber \\
-    &= V^\pi_{n - 1}(s) + \alpha \left[ G_{n(s)}  - V^\pi_{n - 1}(s)\right]  \nonumber \tag*{where $\alpha = \frac{1}{n(s)}$} 
-\end{flalign}
-Incremental update step
-$$ V^\pi_n(s) \leftarrow V^\pi_{n-1}(s) + \alpha_n \left[ G_{n(s)}  - V^\pi_{n - 1}(s)\right]  $$
-iterate over each sample trajectory and do the incremental update of the value function.
-\section{Temporal Difference Learning}
-\textbf{Temporal Difference Learning}
-approximate value function
-$$ V^\pi(s) \approx r + \gamma V^\pi(s_{t+1}) $$
-Incremental update step
-$$ V^\pi_n(s) \leftarrow V^\pi_{n-1}(s) + \alpha_n \left[ r + V^\pi_{n-1}(s_{t+1}) - V^\pi_{n-1}(s) \right]  $$
-
 \end{document}
