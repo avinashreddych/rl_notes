@@ -1,4 +1,215 @@
 \documentclass[../main.tex]{subfiles}
 \begin{document}
+Temporal Difference learning is a combination of Monte Carlo methods and dynamic Programming. It is a model-free control. You don't bootstrap in Temporal Difference learning unlike monte carlo. Temporal Difference methods depends on other state estimates.
+The simple change in the update equation of the value function is the only difference between Monte Carlo and Temporal Difference methods.
+
+\textbf{Monte Carlo Update}
+
+\begin{equation}
+V(S_t) \leftarrow V(S_t) + \alpha \left[G_t - V(S_t) \right] \nonumber
+\end{equation}
+
+\textbf{Temporal Difference Update}
+
+\begin{equation}
+V(S_t) \leftarrow V(S_t) + \alpha \left[ R_{t+1} + \gamma V(S_{t+1}) - V(S_t) \right] \nonumber
+\end{equation}
+
+In TD learning methods, you don't need to wait for the end of the episode to update the value function. You can update the value function at every time step. You need the next state and next reward to update the value function. This is the main difference between TD learning and Monte Carlo methods.
+
+We follow the same procedure as we did in earlier chapters. We will start with the prediction or evaluation problem. Consider a policy $\pi$ to be evaluate and develop and algorithm to find the value function or state-action value function under the given policy. TD learning bootstraps from its earlier estimates.
+
+\textbf{TD(0) Algorithm}
+
+\begin{algorithm}
+\caption{TD(0) Algorithm}
+\begin{algorithmic}[1]
+\State \textbf{Input:} Initialize a policy $\pi$ to be evaluated, step-size parameter $\alpha$, discount factor $\gamma$
+\State \textbf{Initialize:} $V(S) $ arbitrarily for all $S \in S$ except for $V(terminal) = 0$ 
+\While{for each episode}
+\State  $S \leftarrow$ initial state $S_0$
+\For{for each step of episode}
+\State  Choose $A$ from $S$ using policy derived from $V$
+\State  Take action $A$, observe $R, S'$
+\State  $V(S) \leftarrow V(S) + \alpha \left[ R + \gamma V(S') - V(S) \right]$
+\State  $S \leftarrow S'$
+\If{$S$ is terminal}
+\State \textbf{break}
+\EndIf
+\EndFor
+\EndWhile
+\end{algorithmic}
+\end{algorithm}
+
+One can change the algorithm for estimating the State-Action value function. The only difference is that we need to use the action value function instead of the state value function. 
+Here we call the update $ \delta_t \coloneqq R_{t+1} + \gamma V(S_{t+1}) - V(S_t)$  is call the \emph{TD-error}.
+TD learning methods also converge to value function under the policy $\pi$.
+In TD learning methods, the error is compared with earlier estimate rather the cumulative reward as in monte carlo methods. TD learning methods are computationally advantageous over monte Carlo methods. TD(0) is a special case of TD($\lambda$) where $\lambda = 0$.
+
+Although both monte Carlo methods and TD methods converge, TD methods converge faster than Monte Carlo methods. However, there is no formal proof to show that TD methods converge faster and converge, but from the empirical studies, it is observed that TD methods converge faster than Monte Carlo methods.
+
+\textbf{TD(0)  batch update algorithm}
+
+\begin{algorithm}
+\caption{TD(0) Batch Update Algorithm}
+\begin{algorithmic}[1]
+\State \textbf{Input:} Initialize a policy $\pi$ to be evaluated, step-size parameter $\alpha$, discount factor $\gamma$
+\State \textbf{Initialize:} $V(S) $ arbitrarily for all $S \in S$ except for $V(terminal) = 0$
+\While{each episode}
+\State  $S \leftarrow$ initial state $S_0$
+\For{for each step of episode}
+\State  Choose $A_t$ from $S_t$ using policy $\pi$ derived from $V$
+\State  Take action $A$, observe $R_{t+1}, S_{t+1}$
+\State Store the transition $(S_t, A_t, R_{t+1}, S_{t+1})$ in a memory
+\State Store the update $\delta_t \coloneqq R_{t+1} + \gamma V(S_{t+1}) - V(S_t)$ in a memory
+\State  $S \leftarrow S'$
+\If{$S$ is terminal}
+\State \textbf{break}
+\EndIf
+\State $V(S) \gets V(S) + \frac{\alpha}{|T|} \sum_{0}^{T-1} \delta_t$
+\EndFor
+\EndWhile
+
+\end{algorithmic}
+\end{algorithm}
+
+A state-action value evaluate has the same algorithm as the state value function. The only difference is that we need to use the action value function instead of the state value function.
+
+\begin{equation}
+Q(S_t, A_t) \leftarrow Q(S_t, A_t) + \alpha \left[ R_{t+1} + \gamma Q(S_{t+1}, A_{t+1}) - Q(S_t, A_t) \right] \nonumber
+\end{equation}
+with the above change in the $TD(0)$ algorithm is called \emph{on-policy SARSA} algorithm.
+
+\textbf{SARSA on-policy TD  algorithm}
+
+\begin{algorithm}[H]
+\caption{SARSA on-policy TD algorithm}
+\begin{algorithmic}[1]
+\State \textbf{Input:} Initialize a state-action value funcciton $Q(S, A)$ arbitrarily, step-size parameter $\alpha$, discount factor $\gamma$
+\State \textbf{Input:} Initialize a policy $\pi$ to be evaluated from $Q$.
+\While{for each episode}
+\State  $S \leftarrow$ initial state $S_0$
+\State Choose $A$ from $S$ using policy derived from $Q$
+\For{for each step of episode}
+\State  Take action $A$, observe $R, S'$
+\State  Choose $A'$ from $S'$ using policy derived from $Q$
+\State  $Q(S, A) \leftarrow Q(S, A) + \alpha \left[ R + \gamma Q(S', A') - Q(S, A) \right]$
+\State  $S \leftarrow S'$
+\State  $A \leftarrow A'$
+\If{$S$ is terminal}
+\State \textbf{break}
+\EndIf
+\EndFor
+\EndWhile
+\end{algorithmic}
+\end{algorithm}
+
+we have seen the policy evaluation algorithms using TD methods. Now, its time to derive the TD control algorithms to update the policy to acheivve the optimal policy
+
+\textbf{off policy TD control}
+
+\begin{algorithm}[H]
+\caption{Off-policy TD control or Q-learning algorithm}
+\begin{algorithmic}[1]
+    \State \textbf{Input:} Initialize a state-action value funcciton $Q(S, A)$ arbitrarily, step-size parameter $\alpha$, discount factor $\gamma$
+\State \textbf{Input:} Initialize a policy $\pi$ to be evaluated from $Q$.
+\While{for each episode}
+\State  $S \leftarrow$ initial state $S_0$
+\State Choose $A$ from $S$ using policy derived from $Q$ \Comment{using $\epsilon$-greedy policy}
+\For{for each step of episode}
+\State  Take action $A$, observe $R, S'$
+\State  $Q(S, A) \leftarrow Q(S, A) + \alpha \left[ R + \gamma max_a Q(S', a) - Q(S, A) \right]$
+\State  $S \leftarrow S'$
+\If{$S$ is terminal}
+\State \textbf{break}
+\EndIf
+\EndFor
+\EndWhile
+\end{algorithmic}
+\end{algorithm}
+
+with the update step,
+
+\begin{equation}
+Q(S_t, A_t) \leftarrow Q(S_t, A_t) + \alpha \left[ R_{t+1} + \gamma max_a Q(S_{t+1}, a) - Q(S_t, A_t) \right] \nonumber
+\end{equation}
+
+state-action value function directly approximates the optimal state-action value function $Q^*$. As the algorithm directly learns optimal $Q$, this algorithm is popularly called as \emph{Q-learning} algorithm.
+
+Based on the update equation, there are many variants of \emph{Q-learning} or \emph{SARSA} algorithm. One of them is \emph{Expected SARSA}. The update equation for Expected SARSA is given below.
+
+\begin{equation}
+Q(S_t, A_t) \leftarrow Q(S_t, A_t) + \alpha \left[ R_{t+1} + \gamma \sum_a \pi(a|S_{t+1}) Q(S_{t+1}, a) - Q(S_t, A_t) \right] \nonumber
+\end{equation}
+
+\textbf{Expected SARSA}
+
+\begin{algorithm}[H]
+\caption{Expected SARSA algorithm}
+\begin{algorithmic}[1]
+    \State \textbf{Input:} Initialize a state-action value funcciton $Q(S, A)$ arbitrarily, step-size parameter $\alpha$, discount factor $\gamma$
+\State \textbf{Input:} Initialize a policy $\pi$ to be evaluated from $Q$.
+\While{for each episode}
+\State  $S \leftarrow$ initial state $S_0$
+\State Choose $A$ from $S$ using policy derived from $Q$ \Comment{using $\epsilon$-greedy policy}
+\For{for each step of episode}
+\State  Take action $A$, observe $R, S'$
+\State  $Q(S, A) \leftarrow Q(S, A) + \alpha \left[ R + \gamma \sum_a \pi(a|S') Q(S', a) - Q(S, A) \right]$
+\State  $S \leftarrow S'$
+\If{$S$ is terminal}
+\State \textbf{break}
+\EndIf
+\EndFor
+\EndWhile
+\end{algorithmic}
+\end{algorithm}
+
+
+Both Q-learning and Expected SARSA are off-policy algorithms.  In Q-learning the target policy is greedy whereas the behaviour policy is $\epsilon$-greedy. In Expected SARSA, behaviour policy is $\epsilon$-greedy but the target policy is the actual stochastic policy.
+
+\textbf{Maximization bias}
+
+In Q-learning or SARSA, we update using choosing the maxmimum action value over the states. The true values of $Q$ could be zero for most of the states. In this case, the algorithm will never learn the true values of $Q$ as it will always choose the maximum action value. This is called \emph{maximization bias}.
+
+A \emph{Double Q-learning} algorithm is proposed to overcome this problem. In Double Q-learning, we use two action value functions $Q_1$ and $Q_2$ and update them alternatively. The update equation is given below.
+
+\begin{equation}
+Q_1(S_t, A_t) \leftarrow Q_1(S_t, A_t) + \alpha \left[ R_{t+1} + \gamma Q_2(S_{t+1}, argmax_a Q_1(S_{t+1}, a)) - Q_1(S_t, A_t) \right] \nonumber
+\end{equation}
+or 
+\begin{equation}
+Q_2(S_t, A_t) \leftarrow Q_2(S_t, A_t) + \alpha \left[ R_{t+1} + \gamma Q_1(S_{t+1}, argmax_a Q_2(S_{t+1}, a)) - Q_2(S_t, A_t) \right] \nonumber
+\end{equation}
+During any iteration, we update either $Q_1$ or $Q_2$ and final policy is derived by using the sum of $Q_1$ and $Q_2$ either greedily or $\epsilon$-greedily.
+
+
+\textbf{Double Q-learning}
+
+\begin{algorithm}[H]
+\caption{Double Q-learning algorithm}
+\begin{algorithmic}[1]
+    \State \textbf{Input:} Initialize a state-action value funcciton $Q_1(S, A)$ and $Q_2(S, A)$ arbitrarily, step-size parameter $\alpha$, discount factor $\gamma$
+\State \textbf{Input:} Initialize a policy $\pi$ to be evaluated from $Q_1$ and $Q_2$.
+\While{for each episode}
+\State  $S \leftarrow$ initial state $S_0$
+\State Choose $A$ from $S$ using policy derived from $Q_1$ and $Q_2$ \Comment{using $\epsilon$-greedy policy}
+\For{for each step of episode}
+\State  Take action $A$, observe $R, S'$
+\State Take a unbiased coin toss
+\If{Heads}
+\State  $Q_1(S, A) \leftarrow Q_1(S, A) + \alpha \left[ R + \gamma Q_2(S', argmax_a Q_1(S', a)) - Q_1(S, A) \right]$
+\Else
+\State  $Q_2(S, A) \leftarrow Q_2(S, A) + \alpha \left[ R + \gamma Q_1(S', argmax_a Q_2(S', a)) - Q_2(S, A) \right]$
+\EndIf
+\State  $S \leftarrow S'$
+\If{$S$ is terminal}
+\State \textbf{break}
+\EndIf
+\EndFor
+\EndWhile
+\end{algorithmic}
+\end{algorithm}
+
+How does this elimimate maximization bias? Here, one $Q$ table provides the optimal action and other $Q$ table provides the optimal action value. So, the algorithm will not be biased towards choosing the maximum action value. Thus, it elimimates the maximization bias.
 
 \end{document}
