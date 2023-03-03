@@ -1,5 +1,131 @@
 \documentclass[../main.tex]{subfiles}
 
 \begin{document}
-nstep bootstrapping
+We presented Monte Carlo and TD learning methods till now. To solve RL problems, there is no one single solution that works for every problem. You need an algorithm that sits between Monte Carlo and TD Learning. N-Step Bootstrapping is the exactly that. Unlike in TD learning, you sample upto n steps and record the rewards sum and then bootstrap using the approximate value function.
+
+As we did in the earlier chapters, we proceed to solve the prediction problem. we will evaluate a given policy $\pi$ using the n-step  TD algorithm.
+\textbf{n-step TD  algorithm}
+
+\begin{algorithm} [H]
+\caption{N-Step TD Algorithm}
+\label{alg:nstep_td}
+\begin{algorithmic}[1]
+\State \textbf{Input:} $\pi$ - policy, $\alpha$ - step size, $n$ - number of steps
+\State \textbf{Initialize:} $V(s)$ arbitrarily for all $s \in S$
+\State Initialise a buffer which can store upto $n$ states and rewards
+\While{for each episode}
+\State Initialise $S_0 \neq terminal $ 
+\For{$t=0$ to $T-1$}
+\State Take action $A_t \sim \pi(A_t|S_t)$
+\State Observe $R_{t+1}$ and $S_{t+1}$
+\State Store $S_t, A_t, R_{t+1}, S_{t+1}$ in the buffer
+\If{$t \geq n - 1$}
+\State $\tau \gets t - (n - 1)$
+\State $G_\tau = R_{\tau+1} + \gamma R_{\tau+2} + \gamma^2 R_{\tau+3} + \cdots + \gamma^{n-1} R_{\tau+n} + \gamma^n V(S_{\tau+n})$
+\State $V(S_\tau) \leftarrow V(S_\tau) + \alpha (G_\tau - V(S_\tau))$
+\EndIf
+\EndFor
+\EndWhile
+
+\end{algorithmic}
+\end{algorithm}
+
+
+Theoritically, n-step returns will better estimate the expection of discounted sum of rewards. $n$-step TD methods also converge. Possibly, better that TD(0) and MC methods.
+We have a solution for the prediction problem using $n$-step TD. We can also solve the control problem using $n$-step TD. Recall the \emph{SARSA} algorithm in the previous chapter. SARSA is an on-policy TD control algorithm. We can modify SARSA to use $n$-step returns. The algorithm is given below.
+
+\begin{algorithm}[H]
+\caption{N-Step SARSA Algorithm}
+\label{alg:nstep_sarsa}
+\begin{algorithmic}[1]
+\State Initialise $Q(s,a)$ arbitrarily for all $s \in S, a \in A(s)$
+\State Initialise a buffer which can store upto $n$ states, actions and rewards
+\State Initialize policy $\pi$ to be  $\epsilon-greedy$ with respect to $Q$
+\While{for each episode}
+\State Initialise $S_0 \neq terminal $
+\For{$t=0$ to $T-1$}
+\State Take action $A_t \sim \pi(A_t|S_t)$
+\State Observe $R_{t+1}$ and $S_{t+1}$
+\State Store $S_t, A_t, R_{t+1}, S_{t+1}$ in the buffer
+\If{$t \geq n - 1$}
+\State $\tau \gets t - (n - 1)$
+\State $G_\tau = R_{\tau+1} + \gamma R_{\tau+2} + \gamma^2 R_{\tau+3} + \cdots + \gamma^{n-1} R_{\tau+n} + \gamma^n Q(S_{\tau+n}, A_{\tau+n})$
+\State $Q(S_\tau, A_\tau) \leftarrow Q(S_\tau, A_\tau) + \alpha (G_\tau - Q(S_\tau, A_\tau))$
+\EndIf
+\EndFor
+\EndWhile
+\end{algorithmic}
+\end{algorithm}
+
+$N$-step \emph{SARSA} algorithm converge given that all other states are suffiently explored. The algorithm is also on-policy. The algorithm is also called \emph{SARSA($n$)}.
+
+Off-policy version of $n$-step SARSA is also possible using the importance sampling technique. when using the importance sampling technique, the behaviour policy is different from the target policy. we learn the target policy while sampling from the behaviour policy. You are not estimating the expected sum of discounted rewards but the expected sum of discounted rewards weighted by the importance sampling ratio. Such change is reflected in the update rule. 
+
+\textbf{Off-policy $n$-step SARSA algorithm}
+
+\begin{algorithm}[H]
+\caption{Off-policy N-Step SARSA Algorithm}
+\label{alg:offpolicy_nstep_sarsa}
+\begin{algorithmic}[1]
+\State Initialise $Q(s,a)$ arbitrarily for all $s \in S, a \in A(s)$
+\State Initialise a buffer which can store upto $n$ states, actions and rewards
+\State Initialize policy $\pi$ to be  $\epsilon-greedy$ with respect to $Q$
+\State Initialize behaviour policy $b$ arbitrarily
+\While{for each episode}
+\State Initialise $S_0 \neq terminal $
+\For{$t=0$ to $T-1$}
+\State Take action $A_t \sim b(A_t|S_t)$
+\State Observe $R_{t+1}$ and $S_{t+1}$
+\State Store $S_t, A_t, R_{t+1}, S_{t+1}$ in the buffer
+\If{$t \geq n - 1$}
+\State $\tau \gets t - (n - 1)$
+\State $\rho \gets  \prod_{i=\tau +1}^{\tau +n} \frac{\pi(A_i|S_i)}{b(A_i|S_i)}  $
+\State $G_\tau = R_{\tau+1} + \gamma R_{\tau+2} + \gamma^2 R_{\tau+3} + \cdots + \gamma^{n-1} R_{\tau+n} + \gamma^n Q(S_{\tau+n}, A_{\tau+n})$
+\State $Q(S_\tau, A_\tau) \leftarrow Q(S_\tau, A_\tau) + \alpha \rho (G_\tau - Q(S_\tau, A_\tau))$
+\EndIf
+\EndFor
+\EndWhile
+\end{algorithmic}
+\end{algorithm}
+
+Given the idea of \emph{SARSA($n$)}, we can also define  $expected-SARSA(n)$
+of both off-policy and on-policy versions. However, we can have a off-policy version of $SARSA(n)$ without using importance sampling.
+What is off-policy? The behaviour policy is different from the target policy. We learn the target policy while sampling from the behaviour policy. Earlier, we use the behaviour policy to sample the action, instead take the expected vaue of target policy. This algorithm is called \emph{n-step Tree Backup} algorithm.
+
+
+\begin{algorithm}[H]
+\caption{Off-policy N-Step Tree Backup Algorithm}
+\label{alg:offpolicy_nstep_tree_backup}
+\begin{algorithmic}[1]
+\State Initialise $Q(s,a)$ arbitrarily for all $s \in S, a \in A(s)$
+\State Initialise a buffer which can store upto $n$ states, actions and rewards
+\State Initialize policy $\pi$ to be  $\epsilon-greedy$ with respect to $Q$
+\While{for each episode}
+\State Initialise $S_0 \neq terminal $
+\For{$t=0$ to $T-1$}
+\State Take action $A_t \sim \pi(A_t|S_t)$
+\State Observe $R_{t+1}$ and $S_{t+1}$
+\State Store $S_t, A_t, R_{t+1}, S_{t+1}$ in the buffer
+\If{$t \geq n - 1$}
+\State $\tau \gets t - (n - 1)$
+\State $G \gets R_{\tau +1} + \gamma \sum_a \pi(a|S_{\tau+1})Q(S_{\tau +1},a) $
+\For {$i=t$ to $\tau$}
+\State $G \gets R_i + \gamma G  \sum_{a \neq A_i} \pi(a|S_{\tau+1})Q(S_i,a)  +  \gamma \pi(A_i, S_i)G$
+\EndFor
+\State $Q(S_\tau, A_\tau) \leftarrow Q(S_\tau, A_\tau) + \alpha (G - Q(S_\tau, A_\tau))$
+
+\EndIf
+\EndFor
+\EndWhile
+\end{algorithmic}
+\end{algorithm}
+
+
+
+
+
+
+
+
+
 \end{document}
